@@ -1,112 +1,108 @@
 import { useState } from 'react'
 
-export default function App(props) {
-  const [curr, ChangeCurr] = useState([])
-  const [prev, ChangePrev] = useState([])
-  const [opr, ChangeOpr] = useState([])
-  const INPUT_TYPE = {
-    Number: (e) => amendCurr(e),
-    Arithmetic: (e) => amendPrev(e),
+export default function App() {
+  const [currentValue, setCurrentValue] = useState([])
+  const [previousValue, setPreviousValue] = useState([])
+  const [operation, setOperation] = useState([])
+
+  function handleNumberInput(e) {
+    const newNumberInput = Number(e.target.innerHTML)
+    const newCurrentValue = [...currentValue, newNumberInput]
+    setCurrentValue(newCurrentValue)
   }
 
-  const USER_INPUT = {
-    Numbers: [7, 8, 9, 4, 5, 6, 1, 2, 3, 0],
-    Arithmetic: ['*', '-', '+', '/'],
-    Decimal: '.',
-    Equals: '=',
-  }
-  const userInputList = Object.values(USER_INPUT).flat()
-
-  function amendCurr(e) {
-    const newInput = Number(e.target.innerHTML)
-    const amendedCurr = [...curr, newInput]
-    ChangeCurr(amendedCurr)
+  function handleOperationInput(e) {
+    const newPreviousValue = [...currentValue]
+    const newOperationInput = [e.target.innerHTML]
+    setPreviousValue(newPreviousValue)
+    setOperation(newOperationInput)
+    setCurrentValue([])
   }
 
-  function amendPrev(e) {
-    const amendedPrev = [...curr]
-    const amendedOpr = [e.target.innerHTML]
-    ChangePrev(amendedPrev)
-    ChangeOpr(amendedOpr)
-    ChangeCurr([])
-  }
-
-  function evaluate(finalPrev, finalCurr, opr) {
-    switch (opr[0]) {
+  function evaluate(finalPreviousValue, finalCurrentValue, operation) {
+    switch (operation[0]) {
       case '+':
-        return finalPrev + finalCurr
+        return finalPreviousValue + finalCurrentValue
       case '-':
-        return finalPrev - finalCurr
+        return finalPreviousValue - finalCurrentValue
       case '*':
-        return finalPrev * finalCurr
+        return finalPreviousValue * finalCurrentValue
       case '/':
-        return finalPrev / finalCurr
+        return finalPreviousValue / finalCurrentValue
     }
   }
 
   function compute() {
-    const finalPrev = Number(prev.join(''))
-    const finalCurr = Number(curr.join(''))
-    const finalComp = [evaluate(finalPrev, finalCurr, opr)]
-    ChangeCurr(finalComp)
-    ChangePrev([])
-    ChangeOpr([])
+    const finalPreviousValue = Number(previousValue.join(''))
+    const finalCurrentValue = Number(currentValue.join(''))
+    const computedValue = [
+      evaluate(finalPreviousValue, finalCurrentValue, operation),
+    ]
+    setCurrentValue(computedValue)
+    setPreviousValue([])
+    setOperation([])
+  }
+
+  const HANDLE_INPUT = {
+    Number: (e) => handleNumberInput(e),
+    Operation: (e) => handleOperationInput(e),
+    Compute: () => compute(),
   }
 
   return (
     <div className="App">
       <div className="display">
         <div className="prev">
-          {prev}
-          {opr}
+          {previousValue}
+          {operation}
         </div>
-        <div className="curr">{curr}</div>
+        <div className="curr">{currentValue}</div>
       </div>
       <div className="userInput">
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           7
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           8
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           9
         </button>
-        <button className="input" onClick={(e) => amendPrev(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Operation}>
           *
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           4
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           5
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           6
         </button>
-        <button className="input" onClick={(e) => amendPrev(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Operation}>
           -
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           1
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           2
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           3
         </button>
-        <button className="input" onClick={(e) => amendPrev(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Operation}>
           +
         </button>
-        <button className="input" onClick={(e) => amendPrev(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Operation}>
           /
         </button>
-        <button className="input" onClick={(e) => amendCurr(e)}>
+        <button className="input" onClick={HANDLE_INPUT.Number}>
           0
         </button>
         <button className="input">.</button>
-        <button className="input" onClick={() => compute()}>
+        <button className="input" onClick={HANDLE_INPUT.Compute}>
           =
         </button>
       </div>
