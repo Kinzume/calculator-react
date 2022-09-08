@@ -11,18 +11,27 @@ export default function App() {
     setCurrentValue(newCurrentValue)
   }
 
+  const OPERATION_INPUT_LOGIC = {
+    NewOperation: currentOperation.length == 0 && previousValue.length == 0,
+    ChangeCurrentOperation:
+      currentOperation.length !== 0 && currentValue.length == 0,
+    EvaluateCurrentOperation:
+      currentOperation.length !== 0 && currentValue.length !== 0,
+  }
+
   function handleOperationInput(e) {
     const newPreviousValue = [...currentValue]
     const newOperationInput = [e.target.innerHTML]
-    if (currentOperation.length == 0 && previousValue.length == 0) {
+    if (OPERATION_INPUT_LOGIC.NewOperation) {
       setPreviousValue(newPreviousValue)
       setOperation(newOperationInput)
       setCurrentValue([])
     }
-    if (currentOperation.length !== 0 && currentValue.length == 0) {
+    if (OPERATION_INPUT_LOGIC.ChangeCurrentOperation) {
+      console.log('test')
       setOperation(newOperationInput)
     }
-    if (currentOperation.length !== 0 && currentValue.length !== 0) {
+    if (OPERATION_INPUT_LOGIC.EvaluateCurrentOperation) {
       setPreviousValue([
         evaluateToValue(previousValue, currentValue, currentOperation),
       ])
