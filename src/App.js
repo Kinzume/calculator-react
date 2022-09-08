@@ -9,6 +9,14 @@ export default function App(props) {
     Arithmetic: (e) => amendPrev(e),
   }
 
+  const USER_INPUT = {
+    Numbers: [7, 8, 9, 4, 5, 6, 1, 2, 3, 0],
+    Arithmetic: ['*', '-', '+', '/'],
+    Decimal: '.',
+    Equals: '=',
+  }
+  const userInputList = Object.values(USER_INPUT).flat()
+
   function amendCurr(e) {
     const newInput = Number(e.target.innerHTML)
     const amendedCurr = [...curr, newInput]
