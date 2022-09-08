@@ -3,7 +3,7 @@ import { useState } from 'react'
 export default function App() {
   const [currentValue, setCurrentValue] = useState([])
   const [previousValue, setPreviousValue] = useState([])
-  const [operation, setOperation] = useState([])
+  const [currentOperation, setOperation] = useState([])
 
   function handleNumberInput(e) {
     const newNumberInput = Number(e.target.innerHTML)
@@ -14,13 +14,31 @@ export default function App() {
   function handleOperationInput(e) {
     const newPreviousValue = [...currentValue]
     const newOperationInput = [e.target.innerHTML]
-    setPreviousValue(newPreviousValue)
-    setOperation(newOperationInput)
-    setCurrentValue([])
+    if (currentOperation.length == 0 && previousValue.length == 0) {
+      setPreviousValue(newPreviousValue)
+      setOperation(newOperationInput)
+      setCurrentValue([])
+    }
+    if (currentOperation.length !== 0 && currentValue.length == 0) {
+      setOperation(newOperationInput)
+    }
+    if (currentOperation.length !== 0 && currentValue.length !== 0) {
+      setPreviousValue([
+        evaluateToValue(previousValue, currentValue, currentOperation),
+      ])
+      setOperation(newOperationInput)
+      setCurrentValue([])
+    }
   }
 
-  function evaluate(finalPreviousValue, finalCurrentValue, operation) {
-    switch (operation[0]) {
+  function evaluateToValue(
+    finalPreviousValueArray,
+    finalCurrentValueArray,
+    currentOperation
+  ) {
+    const finalPreviousValue = Number(finalPreviousValueArray.join(''))
+    const finalCurrentValue = Number(finalCurrentValueArray.join(''))
+    switch (currentOperation[0]) {
       case '+':
         return finalPreviousValue + finalCurrentValue
       case '-':
@@ -32,21 +50,16 @@ export default function App() {
     }
   }
 
-  function compute() {
-    const finalPreviousValue = Number(previousValue.join(''))
-    const finalCurrentValue = Number(currentValue.join(''))
-    const computedValue = [
-      evaluate(finalPreviousValue, finalCurrentValue, operation),
-    ]
-    setCurrentValue(computedValue)
-    setPreviousValue([])
-    setOperation([])
-  }
-
   const HANDLE_INPUT = {
     Number: (e) => handleNumberInput(e),
     Operation: (e) => handleOperationInput(e),
-    Compute: () => compute(),
+    Compute: () => {
+      setCurrentValue([
+        evaluateToValue(previousValue, currentValue, currentOperation),
+      ])
+      setPreviousValue([])
+      setOperation([])
+    },
   }
 
   return (
@@ -54,7 +67,7 @@ export default function App() {
       <div className="display">
         <div className="prev">
           {previousValue}
-          {operation}
+          {currentOperation}
         </div>
         <div className="curr">{currentValue}</div>
       </div>
