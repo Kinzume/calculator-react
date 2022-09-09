@@ -1,86 +1,89 @@
-import { useState } from 'react'
+import { useReducer } from 'react'
+import InputDigit from './components/InputDigit'
+import InputOperation from './components/InputOperation'
 
 export default function App() {
-  const [currentValue, setCurrentValue] = useState([])
-  const [previousValue, setPreviousValue] = useState([])
-  const [currentOperation, setOperation] = useState([])
-
-  function handleNumberInput(e) {
-    const newNumberInput = Number(e.target.innerHTML)
-    const newCurrentValue = [...currentValue, newNumberInput]
-    setCurrentValue(newCurrentValue)
+  let initialState = {
+    previousValue: '',
+    currentValue: '',
+    currentOperation: '',
   }
 
-  function handleDecimal(e) {
-    const decimal = e.target.innerHTML
-    if (currentValue.includes(decimal)) {
-      return console.log('test')
-    }
+  const [{ previousValue, currentValue, currentOperation }, dispatch] =
+    useReducer(myReducer, initialState)
 
-    setCurrentValue(decimal)
+  function myReducer(state, action) {
+    switch (action.type) {
+      case 'add-digit':
+        if (state.overwrite) {
+          return { ...state, currentValue: action.typeName, overwrite: false }
+        }
+        if (action.typeName === '0' && state.currentValue === '0') return state
+        if (action.typeName === '.' && state.currentValue.includes('.'))
+          return state
+        return {
+          ...state,
+          currentValue: `${state.currentValue}${action.typeName}`,
+        }
+      case 'operation':
+        if (state.previousValue === '' && state.currentValue === '') {
+          return state
+        }
+        if (state.previousValue === '')
+          return {
+            ...state,
+            currentOperation: action.typeName,
+            previousValue: state.currentValue,
+            currentValue: '',
+          }
+        if (state.currentValue === '') {
+          return { ...state, currentOperation: action.typeName }
+        }
+        return {
+          ...state,
+          previousValue: evaluateToValue(state),
+          currentOperation: action.typeName,
+          currentValue: '',
+        }
+      case 'all-clear':
+        return initialState
+      case 'compute':
+        if (
+          state.currentOperation === '' ||
+          state.previousValue === '' ||
+          state.currentValue === ''
+        ) {
+          return state
+        }
+        return {
+          ...state,
+          currentValue: evaluateToValue(state),
+          previousValue: '',
+          currentOperation: '',
+          overwrite: true,
+        }
+    }
   }
-
-  const OPERATION_INPUT_LOGIC = {
-    NewOperation: currentOperation.length == 0 && previousValue.length == 0,
-    ChangeCurrentOperation:
-      currentOperation.length !== 0 && currentValue.length == 0,
-    EvaluateCurrentOperation:
-      currentOperation.length !== 0 && currentValue.length !== 0,
-  }
-
-  function handleOperationInput(e) {
-    const newPreviousValue = [...currentValue]
-    const newOperationInput = [e.target.innerHTML]
-    if (OPERATION_INPUT_LOGIC.NewOperation) {
-      setPreviousValue(newPreviousValue)
-      setOperation(newOperationInput)
-      setCurrentValue([])
-    }
-    if (OPERATION_INPUT_LOGIC.ChangeCurrentOperation) {
-      setOperation(newOperationInput)
-    }
-    if (OPERATION_INPUT_LOGIC.EvaluateCurrentOperation) {
-      setPreviousValue([
-        evaluateToValue(previousValue, currentValue, currentOperation),
-      ])
-      setOperation(newOperationInput)
-      setCurrentValue([])
-    }
-  }
-
-  function evaluateToValue(
-    finalPreviousValueArray,
-    finalCurrentValueArray,
-    currentOperation
-  ) {
-    const finalPreviousValue = Number(finalPreviousValueArray.join(''))
-    const finalCurrentValue = Number(finalCurrentValueArray.join(''))
-    switch (currentOperation[0]) {
+  function evaluateToValue({ previousValue, currentValue, currentOperation }) {
+    const previous = parseFloat(previousValue)
+    const current = parseFloat(currentValue)
+    if (isNaN(previous) || isNaN(current)) return ''
+    let computation = ''
+    switch (currentOperation) {
       case '+':
-        return finalPreviousValue + finalCurrentValue
+        computation = previous + current
+        break
       case '-':
-        return finalPreviousValue - finalCurrentValue
+        computation = previous - current
+        break
       case '*':
-        return finalPreviousValue * finalCurrentValue
+        computation = previous * current
+        break
       case '/':
-        return finalPreviousValue / finalCurrentValue
+        computation = previous / current
+        break
     }
-  }
-
-  const HANDLE_INPUT = {
-    Number: (e) => handleNumberInput(e),
-    Operation: (e) => handleOperationInput(e),
-    Decimal: (e) => handleDecimal(e),
-    Compute: () => {
-      console.log([
-        evaluateToValue(previousValue, currentValue, currentOperation),
-      ])
-      setCurrentValue([
-        evaluateToValue(previousValue, currentValue, currentOperation),
-      ])
-      setPreviousValue([])
-      setOperation([])
-    },
+    return computation.toString()
   }
 
   return (
@@ -93,52 +96,28 @@ export default function App() {
         <div className="curr">{currentValue}</div>
       </div>
       <div className="userInput">
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          7
+        <button
+          className="input"
+          onClick={() => dispatch({ type: 'all-clear' })}
+        >
+          AC
         </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          8
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          9
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Operation}>
-          *
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          4
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          5
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          6
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Operation}>
-          -
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          1
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          2
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          3
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Operation}>
-          +
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Operation}>
-          /
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Number}>
-          0
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Decimal}>
-          .
-        </button>
-        <button className="input" onClick={HANDLE_INPUT.Compute}>
+        <InputDigit dispatch={dispatch} digit="7" />
+        <InputDigit dispatch={dispatch} digit="8" />
+        <InputDigit dispatch={dispatch} digit="9" />
+        <InputOperation dispatch={dispatch} operation="*" />
+        <InputDigit dispatch={dispatch} digit="4" />
+        <InputDigit dispatch={dispatch} digit="5" />
+        <InputDigit dispatch={dispatch} digit="6" />
+        <InputOperation dispatch={dispatch} operation="-" />
+        <InputDigit dispatch={dispatch} digit="1" />
+        <InputDigit dispatch={dispatch} digit="2" />
+        <InputDigit dispatch={dispatch} digit="3" />
+        <InputOperation dispatch={dispatch} operation="+" />
+        <InputOperation dispatch={dispatch} operation="/" />
+        <InputDigit dispatch={dispatch} digit="0" />
+        <InputDigit dispatch={dispatch} digit="." />
+        <button className="input" onClick={() => dispatch({ type: 'compute' })}>
           =
         </button>
       </div>
