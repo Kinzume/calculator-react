@@ -11,6 +11,15 @@ export default function App() {
     setCurrentValue(newCurrentValue)
   }
 
+  function handleDecimal(e) {
+    const decimal = e.target.innerHTML
+    if (currentValue.includes(decimal)) {
+      return console.log('test')
+    }
+
+    setCurrentValue(decimal)
+  }
+
   const OPERATION_INPUT_LOGIC = {
     NewOperation: currentOperation.length == 0 && previousValue.length == 0,
     ChangeCurrentOperation:
@@ -28,7 +37,6 @@ export default function App() {
       setCurrentValue([])
     }
     if (OPERATION_INPUT_LOGIC.ChangeCurrentOperation) {
-      console.log('test')
       setOperation(newOperationInput)
     }
     if (OPERATION_INPUT_LOGIC.EvaluateCurrentOperation) {
@@ -62,7 +70,11 @@ export default function App() {
   const HANDLE_INPUT = {
     Number: (e) => handleNumberInput(e),
     Operation: (e) => handleOperationInput(e),
+    Decimal: (e) => handleDecimal(e),
     Compute: () => {
+      console.log([
+        evaluateToValue(previousValue, currentValue, currentOperation),
+      ])
       setCurrentValue([
         evaluateToValue(previousValue, currentValue, currentOperation),
       ])
@@ -123,7 +135,9 @@ export default function App() {
         <button className="input" onClick={HANDLE_INPUT.Number}>
           0
         </button>
-        <button className="input">.</button>
+        <button className="input" onClick={HANDLE_INPUT.Decimal}>
+          .
+        </button>
         <button className="input" onClick={HANDLE_INPUT.Compute}>
           =
         </button>
